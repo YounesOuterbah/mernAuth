@@ -1,14 +1,13 @@
 import { User } from "../models/User.js";
 import bcrypt from "bcryptjs";
 
-export const signup = async (req, res) => {
+export const signup = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
     const userExists = await User.findOne({ email });
-
     if (userExists) {
-      return res.status(500).json({ message: "user already exists" });
+      return res.status(409).json({ message: "user already exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -23,6 +22,8 @@ export const signup = async (req, res) => {
     await user.save();
     res.status(201).json(user);
   } catch (error) {
-    res.status(500).json(error.message);
+    next(error);
+    // console.error("Error in signup:", error);
+    // res.status(500).json({ message: "Internal Server Error" });
   }
 };
